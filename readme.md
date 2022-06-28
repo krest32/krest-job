@@ -15,9 +15,35 @@
 3. 调度策略：随机、轮询、加权轮询
 4. 基于http协议的远程调度策略，加入重试机制
 5. 调度任务日志记录
+6. 基于权重实现分片任务
 
 ## 未来目标
 
 1. 调度任务框架的高可用
 2. 异常检测机制
-3. 分片任务的完善
+
+
+
+
+
+## 其他
+
+### 分片任务请求报文
+
+~~~json
+{
+    "appName": "demo-spring-krest-job",
+    "createTime": "2022-06-28 20:35:01",
+    "id": "1541762080749166592",
+    "cron": "0/5 * * * * ?",
+    "jobGroup": "default-jobGroup",
+    "jobName": "demo-job2",
+    "jobType": "SHARDING",
+    "args": "[\"1\",\"2\",\"3\",\"4\",\"5\",\"6\",\"7\",\"8\",\"9\"]",
+    "loadBalanceType": "RANDOM",
+    "methodType": "post",
+    "path": "service/demo-krestjob/sharding",
+    "running": false
+}
+~~~
+

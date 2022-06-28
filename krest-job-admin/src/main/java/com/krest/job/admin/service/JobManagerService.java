@@ -6,8 +6,6 @@ import com.krest.job.common.utils.R;
 
 public interface JobManagerService {
 
-    R runJob(String jobHandlerId);
-
     R callBack(String jobHandlerId);
 
     R stopScheduleJob(JobHandler jobHandler);

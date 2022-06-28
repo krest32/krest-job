@@ -15,18 +15,6 @@ public class JobManagerController {
     private JobManagerService jobManagerService;
 
     /**
-     * 执行一次job
-     *
-     * @param jobHandlerId
-     * @return
-     */
-    @PostMapping("run/direct/{jobHandlerId}")
-    public R runJob(@PathVariable String jobHandlerId) {
-        return jobManagerService.runJob(jobHandlerId);
-    }
-
-
-    /**
      * 执行策略任务
      *
      * @param jobHandler
@@ -48,5 +36,4 @@ public class JobManagerController {
     public R stopScheduleJob(@RequestBody JobHandler jobHandler) {
         return jobManagerService.stopScheduleJob(jobHandler);
     }
-
 }

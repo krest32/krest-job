@@ -50,7 +50,7 @@ public class RegisterJobHandler implements BeanPostProcessor {
                     jobHandler.setId(idWorker.nextId());
                     jobHandler.setAppName(coreJobConfig.getClientAppName());
                     jobHandler.setMethodType(getRequestMethodType(krestJobExecutor.method()));
-                    jobHandler.setJobType(krestJobExecutor.jobType().toString());
+                    jobHandler.setJobType(krestJobExecutor.jobType());
                     jobHandler.setPath(krestJobExecutor.path());
                     jobHandler.setCreateTime(DateUtils.getNowDate(DateUtils.getDateFormat1()));
                     jobHandler.setJobName(krestJobExecutor.jobName());

@@ -1,6 +1,7 @@
 package com.krest.job.admin.schedule;
 
 
+import com.alibaba.druid.util.StringUtils;
 import com.krest.job.admin.mapper.ServiceInfoMapper;
 import com.krest.job.common.entity.ServiceInfo;
 import com.krest.job.common.utils.DateUtils;
@@ -34,8 +35,8 @@ public class CheckServiceAlive {
         List<ServiceInfo> serviceInfos = serviceInfoMapper.selectList(null);
         for (ServiceInfo serviceInfo : serviceInfos) {
             String url = serviceInfo.getServiceAddress() + path;
-            boolean flag = HttpUtil.getRequest(url);
-            if (!flag) {
+            String result = HttpUtil.getRequest(url);
+            if (StringUtils.isEmpty(result)) {
                 log.warn("服务:{} ,已经死亡,移除该服务", serviceInfo.getServiceAddress());
                 serviceInfoMapper.deleteById(serviceInfo.getId());
             }

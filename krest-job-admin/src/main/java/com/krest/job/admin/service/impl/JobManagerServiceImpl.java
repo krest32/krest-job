@@ -43,32 +43,6 @@ public class JobManagerServiceImpl implements JobManagerService {
     ServiceInfoMapper serviceInfoMapper;
 
     @Override
-    public R runJob(String jobHandlerId) {
-        JobHandler jobHandler = jobHandlerMapper.selectById(jobHandlerId);
-        QueryWrapper<ServiceInfo> serviceInfoQueryWrapper = new QueryWrapper<>();
-        serviceInfoQueryWrapper.eq("app_name", jobHandler.getAppName());
-        List<ServiceInfo> serviceInfos = serviceInfoMapper.selectList(serviceInfoQueryWrapper);
-        if (serviceInfos.size() == 0) {
-            return R.ok();
-        }
-
-        // 获取所有的 url 路径
-        List<String[]> collect = serviceInfos.stream().map(serviceInfo -> {
-            String[] params = new String[2];
-            params[0] = serviceInfo.getServiceAddress() + "/" + jobHandler.getPath();
-            params[1] = serviceInfo.getWeight();
-            return params;
-        }).collect(Collectors.toList());
-
-        if (jobHandler.getJobType().equals(JobType.NORMAL) || collect.size() == 1) {
-            return runNormalJob(jobHandler, collect);
-        } else {
-            return runShardingJob(jobHandler, collect);
-        }
-    }
-
-
-    @Override
     public R runScheduleJob(JobHandler jobHandler) {
         // 解析接口传递的Job信息报文
         if (StringUtils.isEmpty(jobHandler.getCron())) {
@@ -76,9 +50,10 @@ public class JobManagerServiceImpl implements JobManagerService {
             log.info(msg);
             return R.ok().message(msg);
         }
-
+        System.out.println(jobHandler);
         // 更新 JobHandler 信息
         jobHandlerMapper.updateById(jobHandler);
+
         // 执行定时任务;
         try {
             Scheduler scheduler = SchedulerUtils.CornJob(
@@ -90,70 +65,9 @@ public class JobManagerServiceImpl implements JobManagerService {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
-        return R.ok();
-    }
-
-    /**
-     * 执行分片任务
-     *
-     * @param jobHandler
-     * @param collect
-     * @return
-     */
-    private R runShardingJob(JobHandler jobHandler, List<String[]> collect) {
-        int total = collect.size();
-        int start = 0, end = 100;
-        ThreadPoolConfig poolConfig = new ThreadPoolConfig(2, 4, 10);
-        ThreadPoolExecutor executor = ThreadPoolFactory.threadPoolExecutor(poolConfig);
-
-
-        // 从大到小，进行排序
-        collect.sort(new Comparator<String[]>() {
-            @Override
-            public int compare(String[] o1, String[] o2) {
-                BigDecimal o1Data = new BigDecimal(o1[1]);
-                BigDecimal o2Data = new BigDecimal(o2[1]);
-                return o2Data.compareTo(o1Data);
-            }
-        });
-
-        int curStart = start;
-        int curEnd = end;
-        for (int i = 0; i < collect.size(); i++) {
-            curEnd = ((int) (end * Double.valueOf(collect.get(i)[1])));
-            System.out.println(curStart + " " + (curStart + curEnd));
-            ShardingJob shardingJob = new ShardingJob();
-            shardingJob.setStart(curStart);
-            shardingJob.setEnd(curStart + curEnd);
-            int idx = i;
-            CompletableFuture<Boolean> future = CompletableFuture.supplyAsync(() -> {
-                boolean flag = HttpUtil.postRequest(collect.get(idx)[0], JSONObject.toJSONString(shardingJob));
-                return flag;
-            }, executor);
-            curStart = curEnd + 1;
-        }
 
         return R.ok();
     }
-
-    /**
-     * 执行普通任务
-     *
-     * @param jobHandler
-     * @param collect
-     * @return
-     */
-    private R runNormalJob(JobHandler jobHandler, List<String[]> collect) {
-        boolean result;
-        String clientURL = LoadBalancer.randomRun(collect);
-        if (jobHandler.getMethodType().equals("get")) {
-            result = HttpUtil.getRequest(clientURL);
-        } else {
-            result = HttpUtil.postRequest(clientURL, jobHandler.getArgs());
-        }
-        return R.ok().data("client-url", clientURL).data("result", result);
-    }
-
     @Override
     public R callBack(String jobId) {
         return null;

@@ -15,7 +15,7 @@ public class JobHandler {
     String path;
     String jobName;
     String jobGroup;
-    String jobType;
+    JobType jobType;
     String methodType;
     String args;
     String cron;
