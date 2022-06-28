@@ -10,30 +10,43 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("job/manager")
 public class JobManagerController {
 
+
     @Autowired
     private JobManagerService jobManagerService;
 
-    @GetMapping("run/direct/{jobHandlerId}")
+    /**
+     * 执行一次job
+     *
+     * @param jobHandlerId
+     * @return
+     */
+    @PostMapping("run/direct/{jobHandlerId}")
     public R runJob(@PathVariable String jobHandlerId) {
         return jobManagerService.runJob(jobHandlerId);
     }
 
 
+    /**
+     * 执行策略任务
+     *
+     * @param jobHandler
+     * @return
+     */
     @PostMapping("run/schedule")
-    public R runJob(@RequestBody JobHandler jobHandler) {
+    public R runScheduleJob(@RequestBody JobHandler jobHandler) {
         return jobManagerService.runScheduleJob(jobHandler);
     }
 
 
-    @GetMapping("callback/{jobId}")
-    public R callBack(@PathVariable String jobId) {
-        return jobManagerService.callBack(jobId);
-    }
-
-
-    @GetMapping("stop/{jobId}")
-    public R stop(@PathVariable String jobId) {
-        return jobManagerService.stop(jobId);
+    /**
+     * 执行策略任务
+     *
+     * @param jobHandler
+     * @return
+     */
+    @PostMapping("stop/schedule")
+    public R stopScheduleJob(@RequestBody JobHandler jobHandler) {
+        return jobManagerService.stopScheduleJob(jobHandler);
     }
 
 }

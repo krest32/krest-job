@@ -3,11 +3,12 @@ package com.krest.job.admin.service.impl;
 import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.krest.job.admin.mapper.JobHandlerMapper;
 import com.krest.job.admin.mapper.ServiceInfoMapper;
+import com.krest.job.admin.schedule.SchedulerJob;
+import com.krest.job.admin.schedule.SchedulerUtils;
 import com.krest.job.admin.service.JobManagerService;
-import com.krest.job.admin.utils.LoadBalancer;
+import com.krest.job.admin.balancer.LoadBalancer;
 import com.krest.job.admin.utils.ShardingJob;
 import com.krest.job.admin.utils.ThreadPoolConfig;
 import com.krest.job.admin.utils.ThreadPoolFactory;
@@ -17,12 +18,11 @@ import com.krest.job.common.entity.ServiceInfo;
 import com.krest.job.common.utils.HttpUtil;
 import com.krest.job.common.utils.R;
 import lombok.extern.slf4j.Slf4j;
+import org.quartz.Scheduler;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.support.CronExpression;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -51,6 +51,7 @@ public class JobManagerServiceImpl implements JobManagerService {
         if (serviceInfos.size() == 0) {
             return R.ok();
         }
+
         // 获取所有的 url 路径
         List<String[]> collect = serviceInfos.stream().map(serviceInfo -> {
             String[] params = new String[2];
@@ -64,7 +65,32 @@ public class JobManagerServiceImpl implements JobManagerService {
         } else {
             return runShardingJob(jobHandler, collect);
         }
+    }
 
+
+    @Override
+    public R runScheduleJob(JobHandler jobHandler) {
+        // 解析接口传递的Job信息报文
+        if (StringUtils.isEmpty(jobHandler.getCron())) {
+            String msg = "job handler info without corn!";
+            log.info(msg);
+            return R.ok().message(msg);
+        }
+
+        // 更新 JobHandler 信息
+        jobHandlerMapper.updateById(jobHandler);
+        // 执行定时任务;
+        try {
+            Scheduler scheduler = SchedulerUtils.CornJob(
+                    jobHandler.getJobName(),
+                    jobHandler.getJobGroup(),
+                    jobHandler.getCron(),
+                    jobHandler, SchedulerJob.class);
+            scheduler.start();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        return R.ok();
     }
 
     /**
@@ -119,7 +145,7 @@ public class JobManagerServiceImpl implements JobManagerService {
      */
     private R runNormalJob(JobHandler jobHandler, List<String[]> collect) {
         boolean result;
-        String clientURL = LoadBalancer.getRandomURL(collect);
+        String clientURL = LoadBalancer.randomRun(collect);
         if (jobHandler.getMethodType().equals("get")) {
             result = HttpUtil.getRequest(clientURL);
         } else {
@@ -134,24 +160,9 @@ public class JobManagerServiceImpl implements JobManagerService {
     }
 
     @Override
-    public R stop(String jobId) {
-        return null;
-    }
-
-    @Override
-    public R runScheduleJob(JobHandler jobHandler) {
-        if (StringUtils.isEmpty(jobHandler.getCron())) {
-            String msg = "job handler info without corn!";
-            log.info(msg);
-            return R.ok().message(msg);
-        }
-        CronExpression cronExpression = CronExpression.parse(jobHandler.getCron());
-        LocalDateTime dateTime = cronExpression.next(LocalDateTime.now());
-        jobHandler.setNextTriggerTime(dateTime.toString());
-        jobHandlerMapper.updateById(jobHandler);
-
-        System.out.println(dateTime);
-
-        return R.ok();
+    public R stopScheduleJob(JobHandler jobHandler) {
+        jobHandler.setRunning(false);
+        int cnt = jobHandlerMapper.updateById(jobHandler);
+        return R.ok().data("更新任务数量", cnt);
     }
 }

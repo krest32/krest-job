@@ -10,7 +10,7 @@ public interface JobManagerService {
 
     R callBack(String jobHandlerId);
 
-    R stop(String jobHandlerId);
+    R stopScheduleJob(JobHandler jobHandler);
 
     R runScheduleJob(JobHandler jobHandler);
 }

@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 public class JobHandlerController {
 
     @Autowired
-    private JobHandlerService jobHandlerService;
+    JobHandlerService jobHandlerService;
 
     /**
      * 注册 job handler
@@ -26,14 +26,12 @@ public class JobHandlerController {
      * @return
      */
     @PostMapping("registry")
-    public R RegistryHobHandler(@RequestBody JobHandler jobHandler) {
+    public R registryHobHandler(@RequestBody JobHandler jobHandler) {
         return jobHandlerService.registryJobHandler(jobHandler);
     }
 
-
     @GetMapping("search/{jobHandlerId}")
-    public R searchJobHandlerById(@PathVariable String jobHandlerId){
+    public R searchJobHandlerById(@PathVariable String jobHandlerId) {
         return jobHandlerService.searchJobHandlerById(jobHandlerId);
     }
-
 }

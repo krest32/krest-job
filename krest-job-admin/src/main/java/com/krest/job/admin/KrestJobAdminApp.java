@@ -12,8 +12,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  */
 @EnableScheduling
 @EnableAsync/*异步执行定时任务*/
-@SpringBootApplication()
-@ComponentScan(basePackages = "com.krest.job")
+@SpringBootApplication
 @MapperScan("com.krest.job.admin.mapper")
 public class KrestJobAdminApp {
     public static void main(String[] args) {

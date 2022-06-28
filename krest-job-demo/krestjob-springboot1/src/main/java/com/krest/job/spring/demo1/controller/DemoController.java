@@ -1,5 +1,6 @@
 package com.krest.job.spring.demo1.controller;
 
+import com.krest.job.common.balancer.LoadBalancerType;
 import com.krest.job.common.entity.JobType;
 import com.krest.job.core.annotation.KrestJobExecutor;
 import com.krest.job.core.annotation.KrestJobhandler;
@@ -19,14 +20,22 @@ public class DemoController {
     @Autowired
     KrestJobService krestJobService;
 
-    @KrestJobExecutor(path = "service/demo-krestjob", method = MethodType.GET)
+    @KrestJobExecutor(
+            jobName = "demo-job1",
+            path = "service/demo-krestjob",
+            method = MethodType.GET,
+            loadBalancerType = LoadBalancerType.WEIGHTROUNDRIBBON)
     @GetMapping("demo-krestjob")
     public String demokrestjob() {
         System.out.println("demo1 执行任务");
         return krestJobService.sayHello();
     }
 
-    @KrestJobExecutor(path = "service/demo-krestjob/sharding", method = MethodType.POST, jobType = JobType.SHARDING)
+    @KrestJobExecutor(
+            jobName = "demo-job2",
+            path = "service/demo-krestjob/sharding",
+            method = MethodType.POST,
+            jobType = JobType.SHARDING)
     @PostMapping("demo-krestjob/sharding")
     public String demokrestjob(@RequestBody ShardingJob shardingJob) {
         log.info("demo1 执行分片任务- start:{}, end :{}", shardingJob.getStart(), shardingJob.getEnd());

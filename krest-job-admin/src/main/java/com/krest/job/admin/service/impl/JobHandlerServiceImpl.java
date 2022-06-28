@@ -30,6 +30,4 @@ public class JobHandlerServiceImpl extends ServiceImpl<JobHandlerMapper, JobHand
         JobHandler jobHandler = baseMapper.selectById(jobHandlerId);
         return R.ok().data("data", jobHandler);
     }
-
-
 }

@@ -16,6 +16,6 @@ krest:
     # 服务注册中心ip与port
     admin_address: http://localhost:9001
     # 本机的 app 信息
-    weight: 0.3
+    weight: 1
     client_app_name: ${spring.application.name}
     client_address: http://localhost:8001

@@ -46,18 +46,24 @@ public class RegisterJobHandler implements BeanPostProcessor {
                     // 生成 Job Handler 注册信息
                     JobHandler jobHandler = new JobHandler();
                     KrestJobExecutor krestJobExecutor = method.getDeclaredAnnotation(KrestJobExecutor.class);
+
                     jobHandler.setId(idWorker.nextId());
                     jobHandler.setAppName(coreJobConfig.getClientAppName());
                     jobHandler.setMethodType(getRequestMethodType(krestJobExecutor.method()));
                     jobHandler.setJobType(krestJobExecutor.jobType().toString());
                     jobHandler.setPath(krestJobExecutor.path());
                     jobHandler.setCreateTime(DateUtils.getNowDate(DateUtils.getDateFormat1()));
+                    jobHandler.setJobName(krestJobExecutor.jobName());
+                    jobHandler.setJobGroup(krestJobExecutor.jobGroup());
+                    jobHandler.setRunning(false);
+                    jobHandler.setLoadBalanceType(krestJobExecutor.loadBalancerType());
 
                     // 注册 Job Handler 服务
                     String requestBodyJson = JSONObject.toJSONString(jobHandler);
                     String adminJobRegister = coreJobConfig.getAdminAddress() + "/job/handler/registry";
 
                     // 开始注册任务
+                    log.info(requestBodyJson);
                     HttpUtil.postRequest(adminJobRegister, requestBodyJson);
                 }
             }

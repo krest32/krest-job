@@ -20,17 +20,16 @@ import java.util.List;
 @Slf4j
 @Component
 public class CheckServiceAlive {
-    final String dateFormat = "yyyy-MM-dd HH:mm:ss";
-    final String path = "/detect/service";
 
+    final String path = "/detect/service";
 
     @Autowired
     ServiceInfoMapper serviceInfoMapper;
 
     /**
-     * 每 30s 进行一次探测
+     * 每 30s 进行一次探测， 同时删除已经死亡的服务
      */
-    @Scheduled(cron = "0/30 * * * * ?")
+    @Scheduled(cron = "0/50 * * * * ?")
     public void detectService() {
         List<ServiceInfo> serviceInfos = serviceInfoMapper.selectList(null);
         for (ServiceInfo serviceInfo : serviceInfos) {
