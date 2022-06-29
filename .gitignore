@@ -1,5 +1,5 @@
-/.idea/
-*/target/
+.idea
+target
 /krest-rpc/
 *.iml
 项目架构流程图.drawio
