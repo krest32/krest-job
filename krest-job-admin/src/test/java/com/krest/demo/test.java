@@ -18,12 +18,7 @@ public class test {
         list.add("6");
         list.add("7");
         list.add("8");
-        list.add("9");
-        ShardingJob shardingJob = new ShardingJob();
-        shardingJob.setData(list);
-        String s = JSONObject.toJSONString(shardingJob);
-        System.out.println(s);
-        String data = "{\"data\":[\"1\",\"2\",\"3\",\"4\",\"5\",\"6\",\"7\",\"8\",\"9\"]}";
+        System.out.println(list.subList(2,8).size());
+        System.out.println(list.subList(0,2).size());
     }
-
 }

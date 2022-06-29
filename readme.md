@@ -24,6 +24,12 @@
 
 
 
+## 分片任务可能存在的问题
+
+1. 执行分片任务，当有server宕机，已经执行的数据可能会被重复执行
+
+
+
 
 
 ## 其他
@@ -44,6 +50,27 @@
     "methodType": "post",
     "path": "service/demo-krestjob/sharding",
     "running": false
+}
+~~~
+
+
+
+Post任务请求报文
+
+~~~json
+{
+    "appName": "demo-spring-krest-job",
+    "createTime": "2022-06-28 21:33:59",
+    "id": "1541776122956025856",
+    "args":"from server",
+    "jobGroup": "default-jobGroup",
+    "cron":"0/5 * * * * ?",
+    "jobName": "demo-job3",
+    "jobType": "NORMAL",
+    "loadBalanceType": "WEIGHTROUNDRIBBON",
+    "methodType": "post",
+    "path": "service/demo-krestjob-post",
+    "running": true
 }
 ~~~
 
