@@ -15,7 +15,6 @@
         <module>krest-job-demo/krestjob-springboot1</module>
         <module>krest-job-demo/krestjob-springboot2</module>
         <module>krest-job-starter</module>
-        <module>krest-rpc</module>
         <module>krest-job-common</module>
     </modules>
 
