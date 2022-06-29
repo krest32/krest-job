@@ -1,0 +1,6 @@
+com\krest\job\core\entity\ServiceInfo.class
+com\krest\job\core\entity\JobHandler.class
+com\krest\job\core\entity\JobInfo.class
+com\krest\job\core\register\RegisterJob.class
+com\krest\job\core\utils\R.class
+com\krest\job\core\utils\ResultCode.class

@@ -1,0 +1,27 @@
+
+=
+java:S1604u"(Make this anonymous inner class a lambda(ÙúÙ
+s
+java:S1488ˆ"\Immediately return this expression instead of assigning it to the temporary variable "flag".(ÎÉß
+Y
+java:S11556">Use isEmpty() to check whether the collection is empty or not.(”é“ùÿÿÿÿ
+l
+java:S2159A"VRemove this call to "equals"; comparisons between unrelated types always return false.(¨Ò§Š
+Q	java:S125V"<This block of commented-out lines of code should be removed.(ş©•®
+U
+java:S1854":Remove this useless assignment to local variable "curEnd".(‘¿Èàùÿÿÿÿ
+O
+java:S1854n"9Remove this useless assignment to local variable "total".(™»Šä
+V
+java:S1854‡":Remove this useless assignment to local variable "future".(Ùâàøÿÿÿÿ
+L
+java:S1172m"1Remove this unused method parameter "jobHandler".(‹ÕÑ·üÿÿÿÿ
+<
+java:S1659o"!Declare "end" on a separate line.(‰§µùÿÿÿÿ
+@
+java:S1481n"*Remove this unused "total" local variable.(™»Šä
+O	java:S106‚"9Replace this use of System.out or System.err by a logger.(¯¾Ú•
+]
+java:S3252ˆ"FUse static access with "com.alibaba.fastjson.JSON" for "toJSONString".(ÎÉß
+G
+java:S1481‡"+Remove this unused "future" local variable.(Ùâàøÿÿÿÿ

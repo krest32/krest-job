@@ -1,0 +1,18 @@
+
+[	java:S1121"FDefine and throw a dedicated exception instead of using a generic one.(®êí
+`	java:S112O"FDefine and throw a dedicated exception instead of using a generic one.(†­Çêüÿÿÿÿ
+[	java:S112M"FDefine and throw a dedicated exception instead of using a generic one.(Ø×«¨
+E
+java:S37401"/Provide the parametrized type for this generic.(®êí
+E
+java:S3740M"/Provide the parametrized type for this generic.(Ø×«¨
+f	java:S1171"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(®êí
+f	java:S117M"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(Ø×«¨
+X
+java:S1117%";Rename "jobKey" which hides the field declared at line 130.(ğı·Ú8¨¶çÈš0
+c	java:S1001"NRename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(®êí
+c	java:S100L"NRename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(¤Ò¶
+N	java:S106k"9Replace this use of System.out or System.err by a logger.(Ş¸İñ
+Z	java:S106{"9Replace this use of System.out or System.err by a logger.(Òéêşÿÿÿÿ8ä¢ÚÈš0
+|
+java:S2142"^Either re-interrupt this method or rethrow the "InterruptedException" that can be caught here.(”ı¾8ê¢ÚÈš0
