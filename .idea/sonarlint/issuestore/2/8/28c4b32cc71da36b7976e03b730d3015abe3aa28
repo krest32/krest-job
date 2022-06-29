@@ -1,0 +1,9 @@
+
+s
+java:S1104"XMake okHttpClient a static final constant or non-public and provide accessors if needed.(›Ã¼Èüÿÿÿÿ
+M
+java:S1444"2Make this "public static okHttpClient" field final(›Ã¼Èüÿÿÿÿ
+r
+java:S3077"WUse a thread-safe type; adding "volatile" is not enough to make this field thread-safe.(›Ã¼Èüÿÿÿÿ
+[
+java:S1124"EReorder the modifiers to comply with the Java Language Specification.(¢ö³®
