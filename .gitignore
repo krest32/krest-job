@@ -1,10 +1,6 @@
 /.idea/
-/krest-job-admin/target/
-/krest-job-demo/target/
-/krest-job-core/target/
-/krest-job-common/target/
-/krest-job-starter/target/
+*/target/
 /krest-rpc/
-krest-job.iml
+*.iml
 项目架构流程图.drawio
 sql.txt
