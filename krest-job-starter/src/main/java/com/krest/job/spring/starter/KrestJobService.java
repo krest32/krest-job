@@ -2,7 +2,8 @@ package com.krest.job.spring.starter;
 
 import com.alibaba.fastjson.JSONObject;
 import com.krest.job.common.entity.ServiceInfo;
-import com.krest.job.common.utils.DateUtils;
+import com.krest.job.common.entity.ServiceType;
+import com.krest.job.common.utils.DateUtil;
 import com.krest.job.common.utils.IdWorker;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
@@ -16,10 +17,6 @@ public class KrestJobService {
 
     public KrestJobService(KrestJobConfig krestJobConfig) {
         this.krestJobConfig = krestJobConfig;
-    }
-
-    public String sayHello() {
-        return "ok";
     }
 
     /**
@@ -36,7 +33,8 @@ public class KrestJobService {
             serviceInfo.setWeight(krestJobConfig.getWeight());
             serviceInfo.setServiceAddress(krestJobConfig.getClient_address());
             serviceInfo.setAppName(krestJobConfig.getClient_app_name());
-            serviceInfo.setCreateTime(DateUtils.getNowDate(dateFormat));
+            serviceInfo.setServiceRole(ServiceType.JOBHANDLER);
+            serviceInfo.setCreateTime(DateUtil.getNowDate(dateFormat));
 
             // 开始注册服务
             String adminUrl = krestJobConfig.getAdmin_address() + "/service/register";

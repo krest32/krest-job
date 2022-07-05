@@ -1,10 +1,20 @@
 package com.krest.job.common.entity;
 
-import lombok.Data;
-import lombok.ToString;
+import lombok.*;
 
 @Data
 @ToString
+@AllArgsConstructor
+@NoArgsConstructor
 public class KrestJobRequest {
-    String msg;
+    int id;
+    String args;
+    String targetUrl;
+    MethodType methodType;
+
+
+    public KrestJobRequest(int id, String url) {
+        this.id = id;
+        this.targetUrl = url;
+    }
 }

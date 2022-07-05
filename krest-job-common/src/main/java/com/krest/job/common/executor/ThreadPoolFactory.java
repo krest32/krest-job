@@ -1,4 +1,4 @@
-package com.krest.job.admin.utils;
+package com.krest.job.common.executor;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;

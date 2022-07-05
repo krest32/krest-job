@@ -15,10 +15,7 @@ public class JobManagerController {
     private JobManagerService jobManagerService;
 
     /**
-     * 执行策略任务
-     *
-     * @param jobHandler
-     * @return
+     * 开始执行 策略任务
      */
     @PostMapping("run/schedule")
     public R runScheduleJob(@RequestBody JobHandler jobHandler) {
@@ -27,13 +24,15 @@ public class JobManagerController {
 
 
     /**
-     * 执行策略任务
-     *
-     * @param jobHandler
-     * @return
+     * 停止执行 策略任务
      */
     @PostMapping("stop/schedule")
     public R stopScheduleJob(@RequestBody JobHandler jobHandler) {
         return jobManagerService.stopScheduleJob(jobHandler);
+    }
+
+    @GetMapping("hello")
+    public String hello() {
+        return "hello";
     }
 }

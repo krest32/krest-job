@@ -16,9 +16,10 @@ public class JobHandler {
     String jobName;
     String jobGroup;
     JobType jobType;
-    String methodType;
+    MethodType methodType;
     String args;
     String cron;
+    Integer retryTimes;
     Integer appPos;
     boolean isRunning;
     LoadBalancerType loadBalanceType;

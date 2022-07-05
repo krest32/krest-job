@@ -13,7 +13,7 @@ import java.net.NetworkInterface;
 //雪花算法代码实现
 public class IdWorker {
     //最终Id
-    private static String resultId="";
+    private static String resultId = "";
 
     // 时间起始标记点，作为基准，一般取系统的最近时间（一旦确定不能变动）
     private final static long twepoch = 1288834974657L;
@@ -38,37 +38,37 @@ public class IdWorker {
     /* 上次生产id时间戳 */
     private static long lastTimestamp = -1L;
     // 0，并发控制
-    private long sequence = 0L;
+    private static long sequence = 0L;
 
-    private final long workerId;
     // 数据标识id部分
-    private final long datacenterId;
+    private final static long datacenterId = getDatacenterId(maxDatacenterId);
 
-    public IdWorker(){
-        this.datacenterId = getDatacenterId(maxDatacenterId);
-        this.workerId = getMaxWorkerId(datacenterId, maxWorkerId);
+    private final static long workerId = getMaxWorkerId(datacenterId, maxWorkerId);
+
+    public IdWorker() {
     }
+
     /**
-     * @param workerId
-     *            工作机器ID
-     * @param datacenterId
-     *            序列号
+     * @param workerId     工作机器ID
+     * @param datacenterId 序列号
      */
-    public IdWorker(long workerId, long datacenterId) {
-        if (workerId > maxWorkerId || workerId < 0) {
-            throw new IllegalArgumentException(String.format("worker Id can't be greater than %d or less than 0", maxWorkerId));
-        }
-        if (datacenterId > maxDatacenterId || datacenterId < 0) {
-            throw new IllegalArgumentException(String.format("datacenter Id can't be greater than %d or less than 0", maxDatacenterId));
-        }
-        this.workerId = workerId;
-        this.datacenterId = datacenterId;
-    }
+//    public IdWorker(long workerId, long datacenterId) {
+//        if (workerId > maxWorkerId || workerId < 0) {
+//            throw new IllegalArgumentException(String.format("worker Id can't be greater than %d or less than 0", maxWorkerId));
+//        }
+//        if (datacenterId > maxDatacenterId || datacenterId < 0) {
+//            throw new IllegalArgumentException(String.format("datacenter Id can't be greater than %d or less than 0", maxDatacenterId));
+//        }
+//        workerId = workerId;
+//        datacenterId = datacenterId;
+//    }
+
     /**
      * 获取下一个ID
+     *
      * @return
      */
-    public synchronized  String nextId() {
+    public static synchronized String nextId() {
         long timestamp = timeGen();
         if (timestamp < lastTimestamp) {
             throw new RuntimeException(String.format("Clock moved backwards.  Refusing to generate id for %d milliseconds", lastTimestamp - timestamp));
@@ -89,19 +89,19 @@ public class IdWorker {
         long nextId = ((timestamp - twepoch) << timestampLeftShift)
                 | (datacenterId << datacenterIdShift)
                 | (workerId << workerIdShift) | sequence;
-        resultId=String.valueOf(nextId);
+        resultId = String.valueOf(nextId);
         return resultId;
     }
 
-    private long tilNextMillis(final long lastTimestamp) {
-        long timestamp = this.timeGen();
+    private static long tilNextMillis(final long lastTimestamp) {
+        long timestamp = timeGen();
         while (timestamp <= lastTimestamp) {
-            timestamp = this.timeGen();
+            timestamp = timeGen();
         }
         return timestamp;
     }
 
-    private long timeGen() {
+    private static long timeGen() {
         return System.currentTimeMillis();
     }
 

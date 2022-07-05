@@ -8,7 +8,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "krest.job")
 public class KrestJobConfig {
 
-
     private String admin_address;
 
     private String weight;

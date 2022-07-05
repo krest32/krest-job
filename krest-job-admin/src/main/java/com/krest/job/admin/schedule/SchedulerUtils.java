@@ -1,6 +1,7 @@
 package com.krest.job.admin.schedule;
 
 import com.krest.job.common.entity.JobHandler;
+import com.krest.job.common.entity.KrestJobMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
@@ -119,7 +120,7 @@ public class SchedulerUtils implements InterruptableJob {
             scheduler.pauseTrigger(triggerKey);// 停止触发器
             scheduler.unscheduleJob(triggerKey);// 移除触发器
             scheduler.deleteJob(JobKey.jobKey(jobName, jobGroupName));
-            log.info(String.format("删除任务，jobName：%s ,jobGroupName:%s", jobName, jobGroupName));
+            log.info(String.format(KrestJobMessage.StopScheduleJob + " jobName：%s ,jobGroupName:%s", jobName, jobGroupName));
         } catch (SchedulerException e) {
             log.error(e.getMessage(), e);
         }

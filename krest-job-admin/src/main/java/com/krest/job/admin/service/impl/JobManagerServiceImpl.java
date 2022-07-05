@@ -7,6 +7,7 @@ import com.krest.job.admin.schedule.SchedulerJob;
 import com.krest.job.admin.schedule.SchedulerUtils;
 import com.krest.job.admin.service.JobManagerService;
 import com.krest.job.common.entity.JobHandler;
+import com.krest.job.common.entity.KrestJobMessage;
 import com.krest.job.common.utils.R;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.Scheduler;
@@ -34,11 +35,16 @@ public class JobManagerServiceImpl implements JobManagerService {
             log.info(msg);
             return R.ok().message(msg);
         }
-        System.out.println(jobHandler);
-        // 更新 JobHandler 信息
+
+        // 如果当前 Job handler 信息在数据库中不存在
+        if (null == jobHandlerMapper.selectById(jobHandler.getId())) {
+            return R.error().message(KrestJobMessage.JobHandleNotExist);
+        }
+
+        // 更新当前的 JobHandler 信息
         jobHandlerMapper.updateById(jobHandler);
 
-        // 执行定时任务;
+        // 执行定时任务：job, 会以线程池的方式进行执行
         try {
             Scheduler scheduler = SchedulerUtils.CornJob(
                     jobHandler.getJobName(),
@@ -46,16 +52,19 @@ public class JobManagerServiceImpl implements JobManagerService {
                     jobHandler.getCron(),
                     jobHandler, SchedulerJob.class);
             scheduler.start();
+
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
 
         return R.ok();
     }
+
     @Override
     public R callBack(String jobId) {
         return null;
     }
+
 
     @Override
     public R stopScheduleJob(JobHandler jobHandler) {

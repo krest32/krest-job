@@ -5,6 +5,7 @@ import com.krest.job.common.entity.ShardingJob;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class test {
 
@@ -18,7 +19,9 @@ public class test {
         list.add("6");
         list.add("7");
         list.add("8");
-        System.out.println(list.subList(2,8).size());
-        System.out.println(list.subList(0,2).size());
+        List<String> collect = list.stream().filter(temp -> !temp.equals("2")).collect(Collectors.toList());
+        for (String temp : collect) {
+            System.out.println(temp);
+        }
     }
 }

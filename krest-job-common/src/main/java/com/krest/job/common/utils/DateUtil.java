@@ -6,7 +6,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class DateUtils {
+public class DateUtil {
 
     static final String dateFormat1 = "yyyy-MM-dd HH:mm:ss";
 

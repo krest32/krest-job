@@ -12,4 +12,5 @@ public interface ServiceInfoService {
     ServiceInfo getService(String id);
 
     List<ServiceInfo> getSetviceList(String serviceName);
+
 }

@@ -1,23 +1,15 @@
 package com.krest.job.admin.schedule;
 
-import com.alibaba.druid.util.StringUtils;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.krest.job.admin.balancer.LoadBalancer;
+import com.krest.job.admin.cache.LocalCache;
 import com.krest.job.admin.mapper.JobHandlerMapper;
 import com.krest.job.admin.mapper.JobLogMapper;
 import com.krest.job.admin.mapper.ServiceInfoMapper;
-import com.krest.job.admin.utils.ThreadPoolConfig;
-import com.krest.job.admin.utils.ThreadPoolFactory;
 import com.krest.job.common.balancer.LoadBalancerType;
 import com.krest.job.common.entity.*;
-import com.krest.job.common.utils.DateUtils;
-import com.krest.job.common.utils.HttpUtil;
-import com.krest.job.common.utils.IdWorker;
-import com.krest.job.common.utils.R;
+import com.krest.job.common.utils.*;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -25,14 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
 /**
@@ -42,9 +28,10 @@ import java.util.stream.Collectors;
 @Component
 public class SchedulerJob implements Job {
 
-    JobHandler jobHandler = null;
+    JobHandler jobHandler;
 
-    IdWorker idWorker = new IdWorker();
+    @Autowired
+    CheckService checkService;
 
     @Autowired
     JobHandlerMapper jobHandlerMapper;
@@ -58,6 +45,7 @@ public class SchedulerJob implements Job {
     //定义一个静态时实例
     public static SchedulerJob schedulerJob;
 
+
     //使用这个java注解，让静态实例联系到mapper接口，下边这个方法完全写上，修改为自己的东西
     @PostConstruct
     public void init() {
@@ -65,6 +53,7 @@ public class SchedulerJob implements Job {
         schedulerJob.serviceInfoMapper = serviceInfoMapper;
         schedulerJob.jobHandlerMapper = jobHandlerMapper;
         schedulerJob.jobLogMapper = jobLogMapper;
+        schedulerJob.checkService = checkService;
     }
 
     @Override
@@ -73,73 +62,114 @@ public class SchedulerJob implements Job {
         runJob();
     }
 
+    /**
+     * 开始执行定时任务
+     */
     public void runJob() {
         if (this.jobHandler == null) {
             log.error("jobHandler 为 null");
         } else {
             this.jobHandler = schedulerJob.jobHandlerMapper.selectById(this.jobHandler.getId());
             if (this.jobHandler.isRunning()) {
-                QueryWrapper<ServiceInfo> serviceInfoQueryWrapper = new QueryWrapper<>();
-                serviceInfoQueryWrapper.eq("app_name", this.jobHandler.getAppName());
-                int tryCnt = 0;
-                while (tryCnt < 10) {
-                    updateServiceInfos();
-                    // 获取所有的 url 路径
-                    List<ServiceInfo> serviceInfos = schedulerJob.serviceInfoMapper.selectList(serviceInfoQueryWrapper);
-                    if (serviceInfos.size() == 0) {
-                        log.info("不存在可运行任务的服务");
-                    } else {
-                        List<String[]> collect = serviceInfos.stream().map(serviceInfo -> {
-                            String[] params = new String[2];
-                            params[0] = serviceInfo.getServiceAddress() + "/" + this.jobHandler.getPath();
-                            params[1] = serviceInfo.getWeight();
-                            return params;
-                        }).collect(Collectors.toList());
-                        if (this.jobHandler.getJobType().equals(JobType.NORMAL)) {
-                            // 开始执行定时任务
-                            if (runNormalJob(this.jobHandler, collect)) {
-                                break;
-                            } else {
-                                log.info("开始重试,第{}次", tryCnt);
-                                tryCnt++;
-                            }
-                        } else if (this.jobHandler.getJobType().equals(JobType.SHARDING)) {
-                            // 执行分片任务
-                            if (runShardingJob(this.jobHandler, collect)) {
-                                break;
-                            } else {
-                                log.info("开始重试,第{}次", tryCnt);
-                                tryCnt++;
-                            }
-                        }
-                    }
+
+
+                long start = System.currentTimeMillis();
+                // 开始尝试运行任务
+                List<JobLog> jobLogs = tryRunJob();
+                // 解析日志
+                for (JobLog jobLog : jobLogs) {
+                    schedulerJob.jobLogMapper.insert(jobLog);
                 }
+
+                long end = System.currentTimeMillis();
+                System.out.println((end - start) * 0.001 + " s");
+
             } else {
                 stopRunJob(this.jobHandler);
             }
         }
     }
 
-    @NotNull
-    private List<ServiceInfo> updateServiceInfos() {
-        final String path = "/detect/service";
-        List<ServiceInfo> serviceInfos = schedulerJob.serviceInfoMapper.selectList(null);
-        for (ServiceInfo serviceInfo : serviceInfos) {
-            String url = serviceInfo.getServiceAddress() + path;
-            KrestJobResponse result = HttpUtil.getRequest(url);
-            if (StringUtils.isEmpty(result.getMsg())) {
-                log.warn("服务:{} ,已经死亡,移除该服务", serviceInfo.getServiceAddress());
-                schedulerJob.serviceInfoMapper.deleteById(serviceInfo.getId());
-            }
+    private List<JobLog> tryRunJob() {
+        int tryCnt = 0;
+        List<JobLog> jobLogs = new ArrayList<>();
+        while (tryCnt < this.jobHandler.getRetryTimes()) {
+
+            List<ServiceInfo> serviceInfos = LocalCache.getServiceInfos().stream().filter(
+                    serviceInfo ->
+                            serviceInfo.getAppName().equals(this.jobHandler.getAppName()))
+                    .collect(Collectors.toList());
+
+
+            // 开始执行任务
+            if (runJod(jobLogs, serviceInfos)) break;
+            // 如果需要重试，则要更新 service 信息
+            tryCnt++;
+            schedulerJob.checkService.detectService();
+            log.info(KrestJobMessage.ReTryJob + " " + tryCnt);
         }
-        return serviceInfos;
+
+        // 超过重试次数
+        if (tryCnt >= this.jobHandler.getRetryTimes()) {
+            log.info(KrestJobMessage.DoesNotExistServiceForRunningJob);
+            JobLog jobLog = new JobLog();
+            jobLog.setLogId(IdWorker.nextId());
+            jobLog.setCreateTime(DateUtil.getNowDate(DateUtil.getDateFormat1()));
+            jobLog.setJobId(this.jobHandler.getId());
+            jobLog.setRequestArgs(this.jobHandler.getArgs());
+            jobLog.setRunApp(null);
+            jobLog.setExceptionMsg(KrestJobMessage.DoesNotExistServiceForRunningJob);
+
+            // 清空，然后重新添加
+            jobLogs.clear();
+            jobLogs.add(jobLog);
+            this.jobHandler.setRunning(false);
+            stopRunJob(this.jobHandler);
+        }
+
+        for (JobLog jobLog : jobLogs) {
+            jobLog.setRetryCount(tryCnt);
+        }
+
+        return jobLogs;
+    }
+
+    private boolean runJod(List<JobLog> jobLogs, List<ServiceInfo> serviceInfos) {
+
+        List<String[]> serviceData = serviceInfos.stream().map(serviceInfo -> {
+            String[] params = new String[2];
+            params[0] = serviceInfo.getServiceAddress() + "/" + this.jobHandler.getPath();
+            params[1] = serviceInfo.getWeight();
+            return params;
+        }).collect(Collectors.toList());
+
+        if (null == serviceData || serviceData.size() == 0)
+            return false;
+
+
+        if (this.jobHandler.getJobType().equals(JobType.NORMAL)) {
+            // 开始执行定时任务
+            if (runNormalJob(serviceData, jobLogs))
+                return true;
+
+        } else if (this.jobHandler.getJobType().equals(JobType.SHARDING)) {
+            // 执行分片任务
+            if (runShardingJob(serviceData, jobLogs))
+                return true;
+        } else {
+            log.info("unknown job type");
+
+        }
+        return false;
     }
 
     /**
      * 执行分片任务
      */
-    private Boolean runShardingJob(JobHandler jobHandler, List<String[]> collect) {
+    private Boolean runShardingJob(List<String[]> collect, List<JobLog> jobLogs) {
+        jobLogs.clear();
         String params = jobHandler.getArgs();
+        String batchId = IdWorker.nextId();
         List<String> list = (List<String>) JSONObject.parse(params);
         List<ShardingJob> shardingJobs = new ArrayList<>();
         int totalServer = collect.size();
@@ -155,14 +185,17 @@ public class SchedulerJob implements Job {
             totalWeight += weight;
         }
 
-        // 为每个 ShardingJob 分配数据
-        ThreadPoolConfig poolConfig = new ThreadPoolConfig(5, 8, 10);
-        ThreadPoolExecutor executor = ThreadPoolFactory.threadPoolExecutor(poolConfig);
-
         int start = 0;
         int idx = 0;
         int totalDataSize = list.size();
+        List<KrestJobFuture> jobFutures = new ArrayList<>();
         for (ShardingJob shardingJob : shardingJobs) {
+            JobLog jobLog = new JobLog();
+            jobLog.setBatchId(batchId);
+            jobLog.setLogId(IdWorker.nextId());
+            jobLog.setJobId(this.jobHandler.getId());
+            jobLog.setCreateTime(DateUtil.getNowDate(DateUtil.getDateFormat1()));
+
             List<String> tempList = new ArrayList<>();
             int end = start + shardingJob.getWeight() * totalDataSize / totalWeight;
             // 如果是最后一个服务，那么就将所有的
@@ -173,42 +206,49 @@ public class SchedulerJob implements Job {
             }
             start += end;
             shardingJob.setData(tempList);
-            String requestJsonStr = JSONObject.toJSONString(shardingJob);
-            // 开启并执行一个异步任务，可以指定我们的线程池
-            int finalIdx = idx;
-            CompletableFuture<KrestJobResponse> future = CompletableFuture.supplyAsync(() -> {
-                return HttpUtil.postRequest(collect.get(finalIdx)[0], requestJsonStr);
-            }, executor);
-            try {
-                KrestJobResponse krestJobResponse = future.get();
-                if (krestJobResponse.getStatus() == false) {
-                    return false;
-                }
-            } catch (InterruptedException e) {
-                log.error(e.getMessage(), e);
-                return false;
-            } catch (ExecutionException e) {
-                log.error(e.getMessage(), e);
-                return false;
-            }
+            String clientUrl = collect.get(idx)[0];
+
+
+            KrestJobRequest krestJobRequest = new KrestJobRequest(JobIdGenerator.getNextJobId(), clientUrl);
+            krestJobRequest.setArgs(JSONObject.toJSONString(shardingJob));
+            krestJobRequest.setMethodType(this.jobHandler.getMethodType());
+
+            jobLog.setRunApp(clientUrl);
+            jobLog.setRequestArgs(JSONObject.toJSONString(shardingJob.getData()));
+
+            KrestJobFuture jobFuture = HttpUtil.doRequest(krestJobRequest);
             idx++;
+            jobFutures.add(jobFuture);
+            jobLogs.add(jobLog);
         }
-        return true;
+
+        if (AnalyseUtil.anaylise(jobFutures, jobLogs)) {
+            return true;
+        }
+        return false;
+
     }
 
-    /**
-     * 停止执行任务
-     */
-    private void stopRunJob(JobHandler jobHandler) {
-        SchedulerUtils.deleteJob(jobHandler.getJobName(), jobHandler.getJobGroup());
-    }
 
     /**
      * 执行普通任务
      */
-    private boolean runNormalJob(JobHandler jobHandler, List<String[]> collect) {
+    private boolean runNormalJob(List<String[]> collect, List<JobLog> jobLogs) {
+        JobLog jobLog;
+        if (jobLogs.size() == 0) {
+            jobLog = new JobLog();
+        } else {
+            jobLog = jobLogs.get(0);
+        }
+        jobLog.setJobId(this.jobHandler.getId());
+        jobLog.setLogId(IdWorker.nextId());
+        jobLog.setBatchId(IdWorker.nextId());
+        jobLog.setRequestArgs(this.jobHandler.getArgs());
+        jobLog.setCreateTime(DateUtil.getNowDate(DateUtil.getDateFormat1()));
+
         LoadBalancerType loadBalancerType = jobHandler.getLoadBalanceType();
         String clientUrl;
+
         // 获取已经执行的 Url 标志
         int pos = getPos(jobHandler);
         switch (loadBalancerType) {
@@ -224,33 +264,30 @@ public class SchedulerJob implements Job {
                 clientUrl = LoadBalancer.randomRun(collect);
                 break;
         }
-        KrestJobResponse result = null;
-        int retryCnt = 0;
-        // 开始执行任务
-        if (jobHandler.getMethodType().equals("get")) {
-            result = HttpUtil.getRequest(clientUrl);
-        } else {
-            KrestJobRequest krestJobRequest = new KrestJobRequest();
-            krestJobRequest.setMsg(jobHandler.getArgs());
-            result = HttpUtil.postRequest(clientUrl, JSONObject.toJSONString(krestJobRequest));
-        }
 
-        // 记录日志
-        JobLog jobLog = new JobLog();
-        jobLog.setLogId(idWorker.nextId());
-        jobLog.setJobId(jobHandler.getId());
         jobLog.setRunApp(clientUrl);
-        jobLog.setResultMsg(result.getMsg());
-        jobLog.setRetryCount(retryCnt);
-        jobLog.setCreateTime(DateUtils.getNowDate(DateUtils.getDateFormat1()));
-        schedulerJob.jobLogMapper.insert(jobLog);
 
-        log.info(Thread.currentThread().getName() + "任务执行结果:{}", result);
+        KrestJobFuture jobFuture;
+        KrestJobRequest krestJobRequest = new KrestJobRequest(JobIdGenerator.getNextJobId(), clientUrl);
+        krestJobRequest.setMethodType(jobHandler.getMethodType());
+        jobFuture = HttpUtil.doRequest(krestJobRequest);
+        List<KrestJobFuture> jobFutures = new ArrayList<>();
 
-        return result.getStatus();
+
+        jobFutures.add(jobFuture);
+        jobLogs.add(jobLog);
+
+        if (AnalyseUtil.anaylise(jobFutures, jobLogs)) {
+            return true;
+        }
+        return false;
     }
 
     private int getPos(JobHandler jobHandler) {
         return schedulerJob.jobHandlerMapper.selectById(jobHandler.getId()).getAppPos();
+    }
+
+    private void stopRunJob(JobHandler jobHandler) {
+        SchedulerUtils.deleteJob(jobHandler.getJobName(), jobHandler.getJobGroup());
     }
 }

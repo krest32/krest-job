@@ -20,34 +20,28 @@ public class DemoController {
     KrestJobService krestJobService;
 
     @KrestJobExecutor(
-            jobName = "demo-job1",
-            path = "service/demo-krestjob",
-            method = MethodType.GET,
-            loadBalancerType = LoadBalancerType.WEIGHTROUNDRIBBON)
-    @GetMapping("demo-krestjob")
-    public KrestJobResponse demoNormalJob() {
-        KrestJobResponse krestJobResponse = new KrestJobResponse();
-        log.info("demo1 执行任务 get 任务");
-        return krestJobResponse;
-    }
-
-
-
-    @KrestJobExecutor(
             jobName = "demo-job2",
             path = "service/demo-krestjob/sharding",
             method = MethodType.POST,
             jobType = JobType.SHARDING)
     @PostMapping("demo-krestjob/sharding")
-    public KrestJobResponse demoShardingJob(@RequestBody String requestStr) {
-        ShardingJob shardingJob = JSONObject.parseObject(requestStr, ShardingJob.class);
-        log.info("demo1 执行分片任务- total sharding: {}, local sharding id :{}, weight:{}"
-                , shardingJob.getTotalSharding(), shardingJob.getShardingId(), shardingJob.getWeight());
-        log.info("request data : {} ", shardingJob.getData());
-        KrestJobResponse krestJobResponse = new KrestJobResponse();
-        return krestJobResponse;
-    }
+    public String demoShardingJob(@RequestBody String requestStr) throws InterruptedException {
+        System.out.println(requestStr);
+        KrestJobRequest krestJobRequest = JSONObject.parseObject(requestStr, KrestJobRequest.class);
+        ShardingJob shardingJob = JSONObject.parseObject(krestJobRequest.getArgs(), ShardingJob.class);
 
+        log.info("demo2 执行分片任务- total sharding: {}, local sharding id :{}, weight:{}"
+                , shardingJob.getTotalSharding(), shardingJob.getShardingId(), shardingJob.getWeight());
+
+        String responseStr = JSONObject.toJSONString(
+                new KrestJobResponse(krestJobRequest.getId(),
+                        200, true, "success",
+                        null, null));
+        log.info("request data : {} ", shardingJob.getData());
+        Thread.sleep(3000);
+
+        return responseStr;
+    }
 
     @KrestJobExecutor(
             jobName = "demo-job3",
@@ -55,13 +49,16 @@ public class DemoController {
             method = MethodType.POST,
             loadBalancerType = LoadBalancerType.WEIGHTROUNDRIBBON)
     @PostMapping("demo-krestjob-post")
-    public KrestJobResponse demoNormalJob(@RequestBody String requestStr) {
+    public String demoNormalJob(@RequestBody String requestStr) {
         KrestJobRequest krestJobRequest = JSONObject.parseObject(requestStr, KrestJobRequest.class);
-        KrestJobResponse krestJobResponse = new KrestJobResponse();
-        log.info("demo1 执行任务 post 任务");
+        log.info("demo2 执行任务 post 任务");
         log.info(krestJobRequest.toString());
-        krestJobResponse.setMsg("来自demo1的回执");
-        return krestJobResponse;
-    }
+        String responseStr = JSONObject.toJSONString(
+                new KrestJobResponse(krestJobRequest.getId(),
+                        200, true, "success",
+                        null, null));
+        log.info("request data : {} ", requestStr);
 
+        return responseStr;
+    }
 }

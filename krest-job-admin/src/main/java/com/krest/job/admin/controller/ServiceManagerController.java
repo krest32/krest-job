@@ -1,14 +1,22 @@
 package com.krest.job.admin.controller;
 
 
+import com.alibaba.druid.util.StringUtils;
+import com.alibaba.fastjson.JSONObject;
+import com.krest.job.admin.cache.LocalCache;
+import com.krest.job.admin.mapper.ServiceInfoMapper;
 import com.krest.job.admin.service.ServiceInfoService;
+import com.krest.job.common.entity.KrestJobRequest;
+import com.krest.job.common.entity.KrestJobResponse;
 import com.krest.job.common.entity.ServiceInfo;
+import com.krest.job.common.entity.ServiceType;
 import com.krest.job.common.utils.R;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -18,6 +26,9 @@ public class ServiceManagerController {
 
     @Autowired
     ServiceInfoService serviceimpl;
+
+    @Autowired
+    ServiceInfoMapper serviceInfoMapper;
 
     /**
      * 注册服务接口
@@ -31,10 +42,9 @@ public class ServiceManagerController {
         return R.ok().data("saveSuccess", flag);
     }
 
-
     @GetMapping("get/service/{id}")
     public R getServiceByid(@PathVariable String id) {
-        return R.ok().data("service", serviceimpl.getService(id));
+        return R.ok().data("service", serviceInfoMapper.selectById(id));
     }
 
 
@@ -42,5 +52,63 @@ public class ServiceManagerController {
     public R getServiceByName(@PathVariable String serviceName) {
         List<ServiceInfo> serviceList = serviceimpl.getSetviceList(serviceName);
         return R.ok().data("serviceList", serviceList);
+    }
+
+    /**
+     * 注册Follower
+     */
+    @PostMapping("register/follower")
+    public String registerFollower(@RequestBody String requestStr) {
+        KrestJobRequest request = JSONObject.parseObject(requestStr, KrestJobRequest.class);
+        ServiceInfo serviceInfo = JSONObject.parseObject(request.getArgs(), ServiceInfo.class);
+        KrestJobResponse response;
+        if (null != serviceInfo && StringUtils.isEmpty(serviceInfo.getServiceAddress())) {
+            List<ServiceInfo> adminServiceInfos = LocalCache.getAdminServiceInfos()
+                    .stream()
+                    .filter(tempInfo ->
+                            !tempInfo.getServiceAddress().equals(serviceInfo.getServiceAddress()))
+                    .collect(Collectors.toList());
+            adminServiceInfos.add(serviceInfo);
+            LocalCache.setAdminServiceInfos(adminServiceInfos);
+            response = new KrestJobResponse(
+                    request.getId(), 200, true,
+                    "跟随成功", null, null);
+        } else {
+            response = new KrestJobResponse(
+                    request.getId(), 200, true,
+                    "跟随失败", null, null);
+        }
+        return JSONObject.toJSONString(response);
+    }
+
+    @PostMapping("heartbeat")
+    public String heartbeat(@RequestBody String requestStr) {
+        KrestJobRequest krestJobRequest = JSONObject.parseObject(requestStr, KrestJobRequest.class);
+        ServiceInfo serviceInfo = JSONObject.parseObject(krestJobRequest.getArgs(), ServiceInfo.class);
+        KrestJobResponse response = new KrestJobResponse(
+                krestJobRequest.getId(), 200, true,
+                "心跳检测成功", null, null);
+        return JSONObject.toJSONString(response);
+    }
+
+    @PostMapping("update/status")
+    public String updateStatus(@RequestBody String requestStr) {
+        KrestJobRequest request = JSONObject.parseObject(requestStr, KrestJobRequest.class);
+        String status = request.getArgs();
+        // 更改为 service 状态
+        if (status.equals(ServiceType.FOLLOWER)) {
+
+
+        } else if (status.equals(ServiceType.OBSERVER)) {
+
+
+        } else {
+
+        }
+
+        KrestJobResponse response = new KrestJobResponse(
+                request.getId(), 200, true,
+                "心跳检测成功", null, null);
+        return JSONObject.toJSONString(response);
     }
 }

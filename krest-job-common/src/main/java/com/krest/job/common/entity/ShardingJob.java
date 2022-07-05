@@ -13,5 +13,4 @@ public class ShardingJob {
     Integer weight;
     Integer totalSharding;
     List<String> data;
-
 }

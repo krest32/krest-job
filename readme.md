@@ -6,17 +6,34 @@
 2. core 核心工具包
 2. common 公用工具包
 3. demo 示例模块代码
-3. starter 客户掉导入依赖
+3. starter 客户端依赖
 
 ## 已完成功能
+1. 客户端服务注册，
 
-1. 服务注册，定时探测服务是否存活，及时更新服务列表
-2. 基于Quartz实现分布式任务调度，通过cron表达式操作任务的调度规则
-3. 调度策略：随机、轮询、加权轮询
-4. 基于http协议的远程调度策略
-5. 调度任务日志记录
-6. 基于权重实现分片任务
-7. 失败重试机制
+2. 服务端定时探测服务是否存活，及时更新服务列表
+
+3. 基于Quartz实现分布式任务调度，
+
+4. 基于Cron表达式操作任务的调度规则
+
+5. 基于Okhttp3的远程异步
+
+6. 基于Mybatis-plus数据读写
+
+7. 多线程与异步IO设计，高性能
+
+8. 普通任务调度策略：随机、轮询、加权轮询
+
+9. 分片任务基于权重实现
+
+10. 任务调度失败后动态更新客户端列表，执行重试策略
+
+11. 详细的调度任务日志记录
+
+    
+
+    
 
 ## 未来目标
 1. 框架的高可用
@@ -33,36 +50,38 @@
 ~~~json
 {
     "appName": "demo-spring-krest-job",
-    "createTime": "2022-06-28 20:35:01",
-    "id": "1541762080749166592",
-    "cron": "0/5 * * * * ?",
+    "createTime": "2022-07-03 16:49:47",
+    "id": "1543439397951193088",
     "jobGroup": "default-jobGroup",
-    "jobName": "demo-job2",
+    "jobName": "demo-job3",
     "jobType": "SHARDING",
     "args": "[\"1\",\"2\",\"3\",\"4\",\"5\",\"6\",\"7\",\"8\",\"9\"]",
-    "loadBalanceType": "RANDOM",
-    "methodType": "post",
+    "cron": "0/5 * * * * ?",
+    "loadBalanceType": "WEIGHTROUNDRIBBON",
+    "methodType": "POST",
     "path": "service/demo-krestjob/sharding",
-    "running": false
+    "running": true,
+    "retryTimes": 3
 }
 ~~~
 
 
 
-Post任务请求报文
+### 普通Post任务请求报文
 
 ~~~json
 {
     "appName": "demo-spring-krest-job",
     "createTime": "2022-06-28 21:33:59",
-    "id": "1541776122956025856",
-    "args":"from server",
+    "id": "1543439397951193089",
+    "args": "from server",
     "jobGroup": "default-jobGroup",
-    "cron":"0/5 * * * * ?",
+    "cron": "0/5 * * * * ?",
     "jobName": "demo-job3",
     "jobType": "NORMAL",
     "loadBalanceType": "WEIGHTROUNDRIBBON",
-    "methodType": "post",
+    "methodType": "POST",
+    "retryTimes": 3,
     "path": "service/demo-krestjob-post",
     "running": true
 }
