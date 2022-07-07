@@ -5,6 +5,11 @@
 .classpath
 .project
 
+
+krest-job-admin2/
+krest-job-admin4/
+
+
 krest-rpc
 target/
 build/
