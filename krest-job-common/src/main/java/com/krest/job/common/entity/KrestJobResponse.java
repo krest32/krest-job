@@ -8,7 +8,7 @@ import lombok.ToString;
 @ToString
 @AllArgsConstructor
 public class KrestJobResponse {
-    int id;
+    String id;
     Integer code;
     Boolean status;
     String msg;

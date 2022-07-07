@@ -7,13 +7,12 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class KrestJobRequest {
-    int id;
+    String id;
     String args;
     String targetUrl;
     MethodType methodType;
 
-
-    public KrestJobRequest(int id, String url) {
+    public KrestJobRequest(String id, String url) {
         this.id = id;
         this.targetUrl = url;
     }

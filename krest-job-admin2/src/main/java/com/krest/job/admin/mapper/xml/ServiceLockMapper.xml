@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.krest.job.admin.mapper.ServiceLockMapper">
+
+    <update id="updateToLock" >
+        UPDATE service_lock
+        SET is_lock         = "true",
+            service_address = #{serviceAddress}
+        WHERE is_lock = "false";
+    </update>
+
+    <update id="updateToUnLock" parameterType="com.krest.job.common.entity.ServiceLock">
+        UPDATE service_lock
+        SET is_lock         = "false",
+            service_address = #{serviceAddress}
+        WHERE is_lock = "true";
+    </update>
+</mapper>

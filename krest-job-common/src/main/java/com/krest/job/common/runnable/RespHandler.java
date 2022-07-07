@@ -9,7 +9,7 @@ import java.util.concurrent.*;
 
 public class RespHandler {
 
-    private ConcurrentMap<Integer, KrestJobFuture> krestJobFutureMap = new ConcurrentHashMap<>();
+    private ConcurrentMap<String, KrestJobFuture> krestJobFutureMap = new ConcurrentHashMap<>();
     private BlockingQueue<KrestJobResponse> responseQueue = new LinkedBlockingQueue<>();
 
     static ThreadPoolConfig poolConfig = new ThreadPoolConfig();
@@ -25,7 +25,7 @@ public class RespHandler {
     }
 
     // 将结果放入到 map 集合中
-    public void register(int id, KrestJobFuture jobFuture) {
+    public void register(String id, KrestJobFuture jobFuture) {
         krestJobFutureMap.put(id, jobFuture);
     }
 

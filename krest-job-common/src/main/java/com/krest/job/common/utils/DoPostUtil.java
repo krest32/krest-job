@@ -38,7 +38,6 @@ public class DoPostUtil {
         okHttpClient.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
-
                 KrestJobResponse krestJobResponse = new KrestJobResponse(
                         krestJobRequest.getId(),
                         400, false,
@@ -54,6 +53,7 @@ public class DoPostUtil {
                 String resultMsg = null;
                 try {
                     resultMsg = response.body().string();
+                    // 返回的报文格式需要是 krest JobResponse
                     krestJobResponse = JSONObject.parseObject(resultMsg,
                             KrestJobResponse.class);
                 } catch (Exception e) {

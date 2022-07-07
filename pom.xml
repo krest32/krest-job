@@ -10,6 +10,8 @@
     <version>1.0-SNAPSHOT</version>
     <modules>
         <module>krest-job-admin</module>
+        <module>krest-job-admin2</module>
+        <module>krest-job-admin4</module>
         <module>krest-job-core</module>
         <module>krest-job-demo</module>
         <module>krest-job-demo/krestjob-springboot1</module>

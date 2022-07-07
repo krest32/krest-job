@@ -7,6 +7,7 @@ public class JobIdGenerator {
     static volatile AtomicInteger idGen = new AtomicInteger(0);
 
     public static int getNextJobId() {
+        System.out.println(idGen.get());
         return idGen.addAndGet(1);
     }
 }

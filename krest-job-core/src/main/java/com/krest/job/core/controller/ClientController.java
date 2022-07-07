@@ -12,7 +12,7 @@ public class ClientController {
     /**
      * 检测服务是否存活
      */
-    @PostMapping("detect/service")
+    @PostMapping("client/detect/service")
     public String detectService(@RequestBody String requestStr) {
         KrestJobRequest krestJobRequest = JSONObject.parseObject(requestStr, KrestJobRequest.class);
         KrestJobResponse krestJobResponse = new KrestJobResponse(
@@ -21,6 +21,7 @@ public class ClientController {
                 "job handler still alive",
                 null, null
         );
+        System.out.println(krestJobResponse);
         return JSONObject.toJSONString(krestJobResponse);
     }
 }

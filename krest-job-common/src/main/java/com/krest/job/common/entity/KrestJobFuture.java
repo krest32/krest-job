@@ -23,12 +23,12 @@ public class KrestJobFuture {
     String requestArgs;
     int timeout;
     int state;
-    int id;
+    String id;
 
     // 异步调用结果接听起
     private KrestFutureListener krestFutureListener;
 
-    public KrestJobFuture(int id, String requestArgs, int timeout) {
+    public KrestJobFuture(String id, String requestArgs, int timeout) {
         this.id = id;
         this.requestArgs = requestArgs;
         countDownLatch = new CountDownLatch(1);

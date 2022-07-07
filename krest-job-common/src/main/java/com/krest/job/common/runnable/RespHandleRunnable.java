@@ -10,14 +10,14 @@ import java.util.concurrent.ConcurrentMap;
 @Slf4j
 public class RespHandleRunnable implements Runnable {
 
-    private ConcurrentMap<Integer, KrestJobFuture> jobFutureConcurrentMap;
+    private ConcurrentMap<String, KrestJobFuture> jobFutureConcurrentMap;
     private BlockingQueue<KrestJobResponse> responseQueue;
 
     /**
      * 构造方法
      */
     public RespHandleRunnable(
-            ConcurrentMap<Integer, KrestJobFuture> jobFutureConcurrentMap,
+            ConcurrentMap<String, KrestJobFuture> jobFutureConcurrentMap,
             BlockingQueue<KrestJobResponse> responseQueue) {
 
         this.jobFutureConcurrentMap = jobFutureConcurrentMap;
@@ -31,14 +31,11 @@ public class RespHandleRunnable implements Runnable {
             try {
                 // 从队列中获取请求结果
                 KrestJobResponse jobResponse = responseQueue.take();
-
                 // 得到结果
-                int id = jobResponse.getId();
+                String id = jobResponse.getId();
                 KrestJobFuture jobFuture = jobFutureConcurrentMap.remove(id);
-
                 // 将调用的结果放入到 Future 调用的结果当中
                 jobFuture.setResult(jobResponse);
-
             } catch (InterruptedException e) {
                 log.error(e.getMessage(), e);
             }

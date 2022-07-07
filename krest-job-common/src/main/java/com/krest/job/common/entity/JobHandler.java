@@ -13,6 +13,7 @@ public class JobHandler {
     String id;
     String appName;
     String path;
+    String serviceAddress;
     String jobName;
     String jobGroup;
     JobType jobType;

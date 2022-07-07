@@ -2,6 +2,9 @@
 .gradle/
 .settings/
 
+krest-job-admin2
+krest-job-admin4
+
 .classpath
 .project
 

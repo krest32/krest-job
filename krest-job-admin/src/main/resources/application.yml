@@ -45,7 +45,7 @@ krest:
     admins:
       - localhost:9001
       - localhost:9002
-      - localhost:9003
+      - localhost:9004
 
 
   # 修正返回数据的时间格式
@@ -55,7 +55,7 @@ krest:
 
 # 开启执行sql的日志
 mybatis-plus:
+  mapper-locations: classpath:com/krest/job/admin/mapper/xml/*.xml
 #  configuration:
 #    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     #  #配置mapper xml文件的路径
-  mapper-locations: classpath:com/krest/job/admin/mapper/xml/*.xml
