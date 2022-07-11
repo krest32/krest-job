@@ -20,6 +20,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 
+/**
+ * 服务管理接口
+ */
 @Slf4j
 @RestController
 @RequestMapping("service")

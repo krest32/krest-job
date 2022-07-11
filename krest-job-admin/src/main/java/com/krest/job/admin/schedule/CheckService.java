@@ -4,13 +4,11 @@ package com.krest.job.admin.schedule;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.krest.job.admin.cache.LocalCache;
-import com.krest.job.admin.config.AdminProperties;
 import com.krest.job.admin.mapper.ServiceInfoMapper;
 import com.krest.job.admin.mapper.ServiceLockMapper;
 import com.krest.job.common.entity.*;
 import com.krest.job.common.utils.DateUtil;
 import com.krest.job.common.utils.HttpUtil;
-import com.krest.job.common.utils.JobIdGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -18,7 +16,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -30,8 +27,6 @@ public class CheckService {
     final String updateServiceStatusPath = "/service/update/status";
     final String clientHeartBeatPath = "/client/detect/service";
 
-    @Autowired
-    AdminProperties adminProperties;
 
     @Autowired
     ServiceInfoMapper serviceInfoMapper;

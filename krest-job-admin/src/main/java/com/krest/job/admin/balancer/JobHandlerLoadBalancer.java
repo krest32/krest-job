@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * 普通服务的调用策略
+ * job handler 调用策略
  */
 public class JobHandlerLoadBalancer {
 

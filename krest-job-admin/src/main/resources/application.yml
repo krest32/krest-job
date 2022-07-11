@@ -40,13 +40,6 @@ spring:
         max-size: 10
         queue-capacity: 500
 
-krest:
-  job:
-    admins:
-      - localhost:9001
-      - localhost:9002
-      - localhost:9004
-
 
   # 修正返回数据的时间格式
   jackson:

@@ -1,4 +1,4 @@
-package com.krest.job.admin.dispatch;
+package com.krest.job.admin.distributer;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -18,6 +18,10 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+
+/**
+ * follower 调度器
+ */
 @Slf4j
 @Component
 public class Distributer {
@@ -29,6 +33,7 @@ public class Distributer {
 
 
     /**
+     * 从 follower 中选择合适执行器
      * 1. 如果是 leader, 那么就对任务直接进行调度
      * 2. 如果是 follower，需要将信息转发到 leader, 然后由 leader 进行调度
      */
@@ -50,7 +55,6 @@ public class Distributer {
                 log.info("转发任务成功:{}", jobHandler.getJobName());
             } else {
                 log.info("转发任务失败:{}", jobHandler.getJobName());
-
             }
 
         } else {
@@ -95,16 +99,5 @@ public class Distributer {
                 response.close();
             }
         }
-    }
-
-    public boolean checkJobIsOverDur(JobHandler jobHandler) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime nextTime = LocalDateTime.parse(jobHandler.getNextTriggerTime(), formatter);
-        LocalDateTime nowTime = LocalDateTime.now();
-        // 代表正在运行的任务已经错过了下一次的任务运行时间
-        if (nextTime.compareTo(nowTime) == -1) {
-            return true;
-        }
-        return false;
     }
 }

@@ -6,6 +6,9 @@ import lombok.ToString;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 本地缓存数据
+ */
 @ToString
 public class LocalCache {
 
@@ -22,6 +25,9 @@ public class LocalCache {
         LocalCache.expireTime = expireTime;
     }
 
+    /**
+     * 当前服务的类型： follower、observer、leader
+     */
     private static ServiceInfo curServiceInfo;
 
     public static ServiceInfo getCurServiceInfo() {

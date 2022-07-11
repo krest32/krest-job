@@ -3,14 +3,12 @@ package com.krest.job.admin.register;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.krest.job.admin.cache.LocalCache;
-import com.krest.job.admin.config.AdminProperties;
 import com.krest.job.admin.mapper.ServiceInfoMapper;
 import com.krest.job.admin.schedule.CheckService;
 import com.krest.job.common.entity.*;
 import com.krest.job.common.utils.DateUtil;
 import com.krest.job.common.utils.HttpUtil;
 import com.krest.job.common.utils.IdWorker;
-import com.krest.job.common.utils.JobIdGenerator;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -30,17 +28,10 @@ import java.util.UUID;
 @Slf4j
 public class Register implements InitializingBean {
 
-
-    final String detectPath = "/detect/service";
     final String heartBeatPath = "/service/heartbeat";
-    final String updateServiceStatusPath = "/service/update/status";
-
 
     @Autowired
     Environment environment;
-
-    @Autowired
-    AdminProperties adminProperties;
 
     @Autowired
     ServiceInfoMapper serviceInfoMapper;
@@ -170,7 +161,6 @@ public class Register implements InitializingBean {
         request.setArgs(JSONObject.toJSONString(serviceInfo));
 
         KrestJobFuture jobFuture = HttpUtil.doRequest(request);
-        System.out.println(jobFuture);
         KrestJobResponse jobResponse = jobFuture.get();
 
         if (jobResponse.getStatus()) {

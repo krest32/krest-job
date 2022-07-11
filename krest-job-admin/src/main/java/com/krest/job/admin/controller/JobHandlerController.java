@@ -13,11 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * 调度服务
- *
- * @author Administrator
+ * job handler 的管理
  */
-
 @Slf4j
 @RestController
 @RequestMapping("job/handler")

@@ -2,7 +2,7 @@ package com.krest.job.admin.schedule;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.krest.job.admin.cache.LocalCache;
-import com.krest.job.admin.dispatch.Distributer;
+import com.krest.job.admin.distributer.Distributer;
 import com.krest.job.admin.mapper.JobHandlerMapper;
 import com.krest.job.admin.mapper.ServiceInfoMapper;
 import com.krest.job.common.entity.JobHandler;
@@ -20,8 +20,6 @@ import java.util.List;
 @Component
 public class CheckJobs {
 
-    String cron = "0/5 * * * * ?";
-
     @Autowired
     Distributer distributer;
 
@@ -36,7 +34,6 @@ public class CheckJobs {
      */
     @Scheduled(cron = "0/20 * * * * ?")
     public void slowCheckJob() {
-        log.info("开始slowCheckJob");
         if (LocalCache.getCurServiceInfo().getServiceRole().equals(ServiceType.LEADER)) {
             QueryWrapper<JobHandler> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("is_running", 1);
@@ -44,7 +41,6 @@ public class CheckJobs {
             if (jobHandlers.size() > 0) {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                 for (JobHandler jobHandler : jobHandlers) {
-
                     LocalDateTime nextTime = LocalDateTime.parse(jobHandler.getNextTriggerTime(), formatter);
                     // 代表正在运行的任务已经错过了下一次的任务运行时间
                     if (nextTime.plusSeconds(10).compareTo(LocalDateTime.now()) == -1) {

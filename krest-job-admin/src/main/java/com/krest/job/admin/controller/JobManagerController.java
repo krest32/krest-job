@@ -1,14 +1,9 @@
 package com.krest.job.admin.controller;
 
-import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.krest.job.admin.cache.LocalCache;
-import com.krest.job.admin.dispatch.Distributer;
+import com.krest.job.admin.distributer.Distributer;
 import com.krest.job.admin.mapper.ServiceInfoMapper;
 import com.krest.job.admin.service.JobManagerService;
 import com.krest.job.common.entity.JobHandler;
-import com.krest.job.common.entity.ServiceInfo;
-import com.krest.job.common.entity.ServiceType;
 import com.krest.job.common.utils.R;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
@@ -16,8 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import java.io.IOException;
-
+/**
+ * 任务调度接口
+ */
 @Slf4j
 @RestController
 @RequestMapping("job/manager")

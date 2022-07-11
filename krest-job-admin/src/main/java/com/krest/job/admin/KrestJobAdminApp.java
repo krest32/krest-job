@@ -20,6 +20,5 @@ public class KrestJobAdminApp {
 
     public static void main(String[] args) {
         SpringApplication.run(KrestJobAdminApp.class, args);
-
     }
 }
