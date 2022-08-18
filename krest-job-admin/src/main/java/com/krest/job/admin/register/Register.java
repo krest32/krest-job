@@ -62,8 +62,6 @@ public class Register implements InitializingBean {
         // 同步信息
         synchInfo(serviceInfo);
 
-
-
         // 定时检测
         startTimer();
     }
