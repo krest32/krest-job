@@ -9,7 +9,6 @@ spring:
     active: dev
 
   # 数据库配置
-  # 配置数据库
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     druid:
